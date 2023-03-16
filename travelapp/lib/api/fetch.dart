@@ -1,6 +1,7 @@
-import 'dart:convert';
+import 'package:travelapp/api/food.dart';
+import 'package:travelapp/api/hotels.dart';
+import 'package:travelapp/api/poi.dart';
 import 'package:travelapp/models/location_data.dart';
-import 'package:http/http.dart' as http;
 import 'package:travelapp/models/location_food.dart';
 import 'package:travelapp/models/location_hotels.dart';
 import 'package:travelapp/models/location_poi.dart';
@@ -10,28 +11,17 @@ Future<LocationData> getPOI(String? location) async {
   List<PointOfInterest> listPOI = [];
   List<Food> listFood = [];
   List<Hotels> listHotels = [];
+  await extractPOIData(location).then((value) => {
+        for (int i = 0; i < value.length; i++) {listPOI.add(value[i])}
+      });
+  await extractHotelData(location).then((value) => {
+        for (int i = 0; i < value.length; i++) {listHotels.add(value[i])}
+      });
+  await extractFoodData(location).then((value) => {
+        for (int i = 0; i < value.length; i++) {listFood.add(value[i])}
+      });
 
-  var response = await http.get(Uri.parse(apiURL(location)));
-
-  if (response.statusCode == 200) {
-    var jsonString = jsonDecode(response.body);
-    var restPOI = jsonString["Point_of_Interests"];
-    var restFood = jsonString["Food"];
-    var restHotels = jsonString["Hotels"];
-    listPOI = restPOI
-        .map<PointOfInterest>((json) => PointOfInterest.fromJson(json))
-        .toList();
-    listFood = restFood.map<Food>((json) => Food.fromJson(json)).toList();
-    listHotels =
-        restHotels.map<Hotels>((json) => Hotels.fromJson(json)).toList();
-  }
-  // print(response.body);
   locationdata = LocationData(listPOI, listFood, listHotels);
-  return locationdata;
-}
 
-String apiURL(var location) {
-  String url;
-  url = "http://192.168.20.179:3000/travel?id=$location";
-  return url;
+  return locationdata;
 }
